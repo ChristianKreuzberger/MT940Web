@@ -2,6 +2,7 @@ import React from 'react';
 import { Download, Trash2 } from 'lucide-react';
 import StatementInfo from './StatementInfo';
 import TransactionsList from './TransactionsList';
+import BalanceChart from './BalanceChart';
 import './StatementResults.css';
 
 function StatementResults({ data, onClear, onExport }) {
@@ -22,6 +23,11 @@ function StatementResults({ data, onClear, onExport }) {
       </div>
 
       <StatementInfo data={data} />
+      <BalanceChart
+        transactions={data.transactions}
+        openingBalance={data.openingBalance}
+        currency={data.currency}
+      />
       <TransactionsList transactions={data.transactions} currency={data.currency} />
     </div>
   );

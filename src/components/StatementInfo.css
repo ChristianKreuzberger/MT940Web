@@ -1,24 +1,24 @@
 .statement-info {
   background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(236, 72, 153, 0.05) 100%);
   border: 1px solid var(--border);
-  border-radius: 20px;
-  padding: 30px;
-  margin-bottom: 40px;
+  border-radius: 16px;
+  padding: 16px 20px;
+  margin-bottom: 24px;
   animation: slideIn 0.5s ease-out 0.1s both;
   backdrop-filter: blur(10px);
 }
 
 .info-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
 }
 
 .info-card {
   background: rgba(15, 23, 42, 0.8);
   border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 16px;
+  border-radius: 10px;
+  padding: 10px 14px;
   transition: all 0.3s ease;
   cursor: default;
 }
@@ -32,23 +32,23 @@
 
 .info-label {
   color: var(--text-secondary);
-  font-size: 0.85rem;
+  font-size: 0.7rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  margin-bottom: 8px;
+  margin-bottom: 4px;
 }
 
 .info-value {
   color: var(--text);
-  font-size: 1.1rem;
+  font-size: 0.9rem;
   font-weight: 700;
   word-break: break-word;
 }
 
 .info-value.secondary {
   color: var(--text-secondary);
-  font-size: 1rem;
+  font-size: 0.85rem;
 }
 
 .balance-positive {

@@ -6,21 +6,114 @@
   margin-bottom: 24px;
 }
 
+.transactions-header-top {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
 .transactions-header h3 {
   font-size: 1.5rem;
   color: var(--text);
-  margin: 0 0 8px 0;
+  margin: 0;
 }
 
 .transactions-count {
   color: var(--text-secondary);
   font-size: 0.95rem;
+  margin: 0;
+}
+
+.filter-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.filter-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.filter-group-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-secondary);
+  min-width: 64px;
+}
+
+.transactions-filters {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.summarize-btn {
+  margin-left: auto;
+  padding: 5px 14px;
+  border-radius: 20px;
+  border: 1.5px solid rgba(99, 102, 241, 0.45);
+  background: rgba(99, 102, 241, 0.1);
+  color: var(--primary, #6366f1);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.summarize-btn:hover {
+  background: rgba(99, 102, 241, 0.2);
+  border-color: var(--primary, #6366f1);
+}
+
+.reset-filters-btn {
+  padding: 4px 12px;
+  border-radius: 20px;
+  border: 1.5px solid var(--border, #e0e0e0);
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.reset-filters-btn:hover {
+  border-color: #e05252;
+  color: #e05252;
+}
+
+.filter-btn {
+  padding: 6px 16px;
+  border-radius: 20px;
+  border: 1.5px solid var(--border, #e0e0e0);
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.filter-btn:hover {
+  border-color: var(--primary, #4f8ef7);
+  color: var(--primary, #4f8ef7);
+}
+
+.filter-btn.active {
+  background: var(--primary, #4f8ef7);
+  border-color: var(--primary, #4f8ef7);
+  color: #fff;
+  font-weight: 600;
 }
 
 .transactions-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-  gap: 16px;
+  gap: 8px;
 }
 
 .empty-state {

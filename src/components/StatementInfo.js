@@ -41,20 +41,6 @@ function StatementInfo({ data }) {
         </div>
 
         <div className="info-card">
-          <div className="info-label">Opening Balance</div>
-          <div className={`info-value ${balanceClass(data.openingBalance)}`}>
-            {formatBalance(data.openingBalance)}
-          </div>
-        </div>
-
-        <div className="info-card">
-          <div className="info-label">Closing Balance</div>
-          <div className={`info-value ${balanceClass(data.closingBalance)}`}>
-            {formatBalance(data.closingBalance)}
-          </div>
-        </div>
-
-        <div className="info-card">
           <div className="info-label">Total Transactions</div>
           <div className="info-value">{data.transactions.length}</div>
         </div>

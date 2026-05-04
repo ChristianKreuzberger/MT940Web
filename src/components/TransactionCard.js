@@ -1,13 +1,18 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { MT940Parser } from '../parser';
 import './TransactionCard.css';
 
 function TransactionCard({ transaction, currency, index }) {
+  const [expanded, setExpanded] = useState(false);
   const isDebit = transaction.isDebit;
   const amount = Math.abs(transaction.amount);
 
   return (
-    <div className="transaction-card" style={{ animationDelay: `${index * 0.05}s` }}>
+    <div
+      className={`transaction-card${expanded ? ' expanded' : ''}`}
+      style={{ animationDelay: `${index * 0.05}s` }}
+      onClick={() => setExpanded(e => !e)}
+    >
       <div className="transaction-header">
         <div className="transaction-info">
           <div className="transaction-date">{MT940Parser.formatDate(transaction.bookingDate)}</div>
@@ -15,14 +20,17 @@ function TransactionCard({ transaction, currency, index }) {
             {isDebit ? '💸 Debit' : '💰 Credit'}
           </span>
         </div>
-        <div className={`transaction-amount ${isDebit ? 'debit' : 'credit'}`}>
-          <span>{isDebit ? '−' : '+'}</span>
-          <span>{MT940Parser.formatAmount(amount)}</span>
-          <span className="amount-currency">{currency}</span>
+        <div className="transaction-header-right">
+          <div className={`transaction-amount ${isDebit ? 'debit' : 'credit'}`}>
+            <span>{isDebit ? '−' : '+'}</span>
+            <span>{MT940Parser.formatAmount(amount)}</span>
+            <span className="amount-currency">{currency}</span>
+          </div>
+          <span className={`expand-icon${expanded ? ' open' : ''}`}>▾</span>
         </div>
       </div>
 
-      <div className="transaction-details">
+      {expanded && <div className="transaction-details">
         {transaction.transactionCode && (
           <div className="detail-item">
             <div className="detail-label">Transaction Code</div>
@@ -89,7 +97,7 @@ function TransactionCard({ transaction, currency, index }) {
               <div className="detail-value empty">No additional details available</div>
             </div>
           )}
-      </div>
+      </div>}
     </div>
   );
 }
