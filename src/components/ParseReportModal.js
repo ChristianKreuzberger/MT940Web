@@ -59,6 +59,12 @@ function ParseReportModal({ result, error, fileName, onClose }) {
           {isSuccess ? (
             <>
               <div className="parse-report-stats">
+                {result.statementCount > 1 && (
+                  <div className="parse-stat-row">
+                    <span className="parse-stat-label">Statement Blocks</span>
+                    <span className="parse-stat-value parse-stat-highlight">{result.statementCount}</span>
+                  </div>
+                )}
                 {result.accountNumber && (
                   <div className="parse-stat-row">
                     <span className="parse-stat-label">Account</span>

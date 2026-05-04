@@ -113,4 +113,8 @@ The `sample.mt940` file included demonstrates the basic format:
 
 ## License
 
-MIT License - Feel free to use and modify as needed.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## Contributing
+
+Contributions are welcome! Feel free to open issues or submit pull requests.

@@ -65,6 +65,20 @@ function TransactionCard({ transaction, currency, index }) {
           </div>
         )}
 
+        {transaction.counterpartyIban && (
+          <div className="detail-item">
+            <div className="detail-label">IBAN</div>
+            <div className="detail-value">{transaction.counterpartyIban}</div>
+          </div>
+        )}
+
+        {transaction.counterpartyBic && (
+          <div className="detail-item">
+            <div className="detail-label">BIC</div>
+            <div className="detail-value">{transaction.counterpartyBic}</div>
+          </div>
+        )}
+
         {!transaction.transactionCode &&
           !transaction.description &&
           !transaction.details &&

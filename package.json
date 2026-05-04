@@ -2,12 +2,12 @@
   "name": "mt940parser",
   "version": "2.0.0",
   "description": "A modern React web application for parsing and viewing MT940 bank statement files",
-
   "dependencies": {
+    "@tripss/mt940js": "^1.3.7",
+    "lucide-react": "^0.263.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-scripts": "5.0.1",
-    "lucide-react": "^0.263.1"
+    "react-scripts": "5.0.1"
   },
   "scripts": {
     "start": "react-scripts start",
@@ -43,5 +43,3 @@
   "author": "Christian Kreuzberger",
   "license": "MIT"
 }
-
-

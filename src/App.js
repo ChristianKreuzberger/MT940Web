@@ -65,39 +65,41 @@ function App() {
         />
       )}
       <div className="app-content">
-        <header>
-          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '20px' }}>
-            <div style={{
-              width: '80px',
-              height: '80px',
-              background: 'linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%)',
-              borderRadius: '20px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '40px'
-            }}>
-              💳
+        {!statementData && !error && (
+          <header>
+            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '20px' }}>
+              <div style={{
+                width: '80px',
+                height: '80px',
+                background: 'linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%)',
+                borderRadius: '20px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '40px'
+              }}>
+                💳
+              </div>
             </div>
-          </div>
-          <h1>MT940 Parser</h1>
-          <p>Smart bank statement parsing, powered by React</p>
-          <div className="badge-group">
-            <span className="badge">
-              <Upload size={16} />
-              Drag &amp; Drop
-            </span>
-            <span className="badge">
-              ⚡ Instant Parse
-            </span>
-            <span className="badge">
-              🔒 Client-side
-            </span>
-            <span className="badge">
-              📊 Export JSON
-            </span>
-          </div>
-        </header>
+            <h1>MT940 Parser</h1>
+            <p>Smart bank statement parsing, powered by React</p>
+            <div className="badge-group">
+              <span className="badge">
+                <Upload size={16} />
+                Drag &amp; Drop
+              </span>
+              <span className="badge">
+                ⚡ Instant Parse
+              </span>
+              <span className="badge">
+                🔒 Client-side
+              </span>
+              <span className="badge">
+                📊 Export JSON
+              </span>
+            </div>
+          </header>
+        )}
 
         <main>
           {!statementData ? (
