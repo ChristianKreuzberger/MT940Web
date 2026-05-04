@@ -1,0 +1,110 @@
+# MT940 Parser
+
+A modern React web application for parsing and viewing MT940 bank statement files with a professional, dark-themed user interface.
+
+## Features
+
+- **MT940 File Parsing**: Accurately parses MT940 bank statement files with support for multiple field formats
+- **Account Information**: Displays account number, bank code, statement reference, and statement period
+- **Balance Calculation**: Extracts and displays opening and closing balances with currency information
+- **Transaction Support**: Parses multiple transactions with booking dates, amounts, transaction codes, and details
+- **Modern UI**: Professional dark theme with gradient backgrounds, smooth animations, and glass-morphism effects
+- **Drag & Drop Upload**: Intuitive file upload with drag-and-drop support
+- **JSON Export**: Export parsed statement data as JSON for further processing
+- **Responsive Design**: Adapts to different screen sizes with CSS Grid layouts
+- **Client-Side Processing**: All parsing happens in the browser - no backend required
+
+## Project Structure
+
+```
+src/
+├── App.js                 # Main React component managing application state
+├── App.css                # Global application styling
+├── parser.js              # MT940 parsing logic
+├── index.js               # React entry point
+├── index.css              # Global styles and animations
+└── components/
+    ├── FileUpload.js      # File upload UI component
+    ├── FileUpload.css
+    ├── StatementResults.js # Results container component
+    ├── StatementResults.css
+    ├── StatementInfo.js   # Statement details cards component
+    ├── StatementInfo.css
+    ├── TransactionsList.js # Transactions grid component
+    ├── TransactionsList.css
+    ├── TransactionCard.js # Individual transaction card component
+    ├── TransactionCard.css
+    ├── AppHeader.js       # Application header component
+    ├── AppHeader.css
+    ├── HelpModal.js       # Help/information modal
+    └── HelpModal.css
+
+public/
+├── index.html             # HTML entry point
+└── sample.mt940           # Sample MT940 file for testing
+```
+
+## Installation
+
+1. Clone or download the project
+2. Install dependencies:
+```bash
+npm install
+```
+
+3. Start the development server:
+```bash
+npm start
+```
+
+The app will open at `http://localhost:3000`
+
+## Usage
+
+1. **Upload a file**: Click "Choose File" or drag and drop an MT940 file onto the upload area
+2. **View results**: The parsed statement information will display in cards and transaction grid
+3. **Export data**: Click "Export JSON" to download the parsed data as a JSON file
+4. **Clear results**: Click "Clear" to reset and upload a new file
+
+## MT940 Format Support
+
+The parser supports the following MT940 fields:
+- `:20:` - Transaction Reference Number
+- `:25:` - Account Identification (Bank Code/Account Number)
+- `:28:` - Statement Number
+- `:60:` - Opening Balance
+- `:61:` - Transaction Details (multiple transactions supported)
+- `:62:` - Closing Balance
+- `:86:` - Transaction Details (continuation)
+
+## Build for Production
+
+```bash
+npm run build
+```
+
+The optimized production build will be created in the `build/` directory.
+
+## Technologies Used
+
+- **React 18.2.0**: UI framework
+- **React Scripts 5.0.1**: Build and development tooling
+- **Lucide React 0.263.1**: Icon library
+- **CSS3**: Styling with CSS Grid, Flexbox, animations, and backdrop filters
+
+## Browser Compatibility
+
+- Chrome/Edge (latest)
+- Firefox (latest)
+- Safari (latest)
+
+## Sample MT940 File
+
+A sample MT940 file is included at `public/sample.mt940` for testing the parser.
+
+## Notes
+
+- All processing is done client-side in the browser
+- No data is sent to any server
+- Supports MT940 files with UTF-8 encoding
+- Multiple transaction and balance line format variations are supported

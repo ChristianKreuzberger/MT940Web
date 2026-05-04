@@ -1,0 +1,45 @@
+.transactions-list {
+  animation: slideIn 0.5s ease-out 0.2s both;
+}
+
+.transactions-header {
+  margin-bottom: 24px;
+}
+
+.transactions-header h3 {
+  font-size: 1.5rem;
+  color: var(--text);
+  margin: 0 0 8px 0;
+}
+
+.transactions-count {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+}
+
+.transactions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 16px;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--text-secondary);
+}
+
+.empty-state p {
+  font-size: 1.1rem;
+  margin: 0;
+}
+
+@media (max-width: 768px) {
+  .transactions-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .transactions-header h3 {
+    font-size: 1.3rem;
+  }
+}
