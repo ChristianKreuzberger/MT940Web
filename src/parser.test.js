@@ -110,6 +110,67 @@ describe('MT940Parser.parse', () => {
         });
     });
 
+    describe('multiple statements', () => {
+        const stmt = ({ ref, num, openDate, open, txs = [], closeDate, close }) => [
+            `:20:${ref}`,
+            ':25:12345678/9876543210',
+            `:28C:${num}/1`,
+            `:60F:C${openDate}EUR${open}`,
+            ...txs.flat(),
+            `:62F:C${closeDate}EUR${close}`,
+        ];
+        const jan = stmt({ ref: 'S1', num: 1, openDate: '260101', open: '1000,00', txs: [debitTx], closeDate: '260131', close: '749,50' });
+        const feb = stmt({ ref: 'S2', num: 2, openDate: '260201', open: '749,50', txs: [creditTx], closeDate: '260228', close: '849,50' });
+
+        describe('consistent statements', () => {
+            const result = parser.parse(mt940(...jan, ...feb));
+
+            test('merges transactions, balances, period and count', () => {
+                expect(result.transactions).toHaveLength(2);
+                expect(result.openingBalance).toBe(1000);
+                expect(result.closingBalance).toBe(849.5);
+                expect(result.statementCount).toBe(2);
+                expect(result.statementPeriod).toEqual({ startDate: '2026-01-01', endDate: '2026-02-28' });
+            });
+
+            test('has no warnings', () => {
+                expect(result.warnings).toEqual([]);
+            });
+        });
+
+        test('sorts statements by opening date when the file is out of order', () => {
+            const result = parser.parse(mt940(...feb, ...jan));
+            expect(result.openingBalance).toBe(1000);
+            expect(result.closingBalance).toBe(849.5);
+            expect(result.statementPeriod).toEqual({ startDate: '2026-01-01', endDate: '2026-02-28' });
+            expect(result.transactions.map(t => t.amount)).toEqual([-250.5, 100]);
+            expect(result.warnings).toEqual([]);
+        });
+
+        test('warns when the merged balances do not add up (gap between statements)', () => {
+            const gap = stmt({ ref: 'S2', num: 2, openDate: '260201', open: '800,00', txs: [creditTx], closeDate: '260228', close: '900,00' });
+            const result = parser.parse(mt940(...jan, ...gap));
+            expect(result.warnings).toHaveLength(1);
+            expect(result.warnings[0]).toContain('1,000.00');
+            expect(result.warnings[0]).toContain('900.00');
+            expect(result.warnings[0]).toContain('50.50');
+        });
+
+        test('does not warn because of floating point rounding', () => {
+            const tx = (d, amt) => [`:61:${d}${d.slice(2)}C${amt}NTRFNONREF`, ':86:166?00Test'];
+            const a = stmt({ ref: 'A', num: 1, openDate: '260101', open: '0,00', txs: [tx('260102', '0,10'), tx('260103', '0,20')], closeDate: '260131', close: '0,30' });
+            const b = stmt({ ref: 'B', num: 2, openDate: '260201', open: '0,30', txs: [tx('260202', '0,10')], closeDate: '260228', close: '0,40' });
+            const result = parser.parse(mt940(...a, ...b));
+            expect(result.transactions).toHaveLength(3);
+            expect(result.warnings).toEqual([]);
+        });
+
+        test('single statement results have no warnings field', () => {
+            const result = parser.parse(mt940(...HEADER, ...debitTx, ...FOOTER_1TX));
+            expect(result).not.toHaveProperty('warnings');
+        });
+    });
+
     describe('invalid input', () => {
         test.each([
             ['empty string', ''],
