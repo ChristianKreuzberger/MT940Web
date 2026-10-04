@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { MT940Parser } from './parser';
+import { decodeMt940Bytes } from './decodeText';
 import FileUpload from './components/FileUpload';
 import StatementResults from './components/StatementResults';
 import AppHeader from './components/AppHeader';
@@ -21,7 +22,7 @@ function App() {
     setStatementData(null);
 
     try {
-      const content = await file.text();
+      const content = decodeMt940Bytes(await file.arrayBuffer());
       const parser = new MT940Parser();
       const data = parser.parse(content);
       setStatementData(data);
