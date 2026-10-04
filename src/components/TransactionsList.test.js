@@ -31,7 +31,7 @@ const cards = () => container.querySelectorAll('.transaction-card');
 
 test('an expanded card stays expanded after the sort changes', () => {
     render(make(3));
-    click(cards()[0]); // date asc: Description 0 (amount 1)
+    click(cards()[0].querySelector('.transaction-header')); // date asc: Description 0 (amount 1)
     expect(container.querySelector('.transaction-card.expanded').textContent).toContain('Description 0');
 
     click(button('Amount'));
@@ -150,14 +150,16 @@ test('every filter button exposes aria-pressed and each group has exactly one pr
     });
 });
 
+const filterBtn = (text) => [...container.querySelectorAll('.filter-btn')].find((b) => b.textContent.includes(text));
+
 test('clicking a filter flips aria-pressed', () => {
     render(make(3));
-    expect(button('Debit').getAttribute('aria-pressed')).toBe('false');
-    click(button('Debit'));
-    expect(button('Debit').getAttribute('aria-pressed')).toBe('true');
-    expect(button('Custom').getAttribute('aria-pressed')).toBe('false');
-    click(button('Custom'));
-    expect(button('Custom').getAttribute('aria-pressed')).toBe('true');
+    expect(filterBtn('Outgoing').getAttribute('aria-pressed')).toBe('false');
+    click(filterBtn('Outgoing'));
+    expect(filterBtn('Outgoing').getAttribute('aria-pressed')).toBe('true');
+    expect(filterBtn('Custom').getAttribute('aria-pressed')).toBe('false');
+    click(filterBtn('Custom'));
+    expect(filterBtn('Custom').getAttribute('aria-pressed')).toBe('true');
 });
 
 test('the sort direction toggle has no aria-pressed', () => {

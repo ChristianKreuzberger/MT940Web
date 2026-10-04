@@ -190,3 +190,7 @@
 
 td.num.credit { color: #34d399; font-weight: 500; }
 td.num.debit  { color: #f87171; font-weight: 500; }
+
+.summary-overlay:focus {
+  outline: none;
+}

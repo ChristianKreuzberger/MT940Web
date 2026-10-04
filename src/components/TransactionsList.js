@@ -164,6 +164,7 @@ function TransactionsList({ transactions, currency }) {
                 <button
                   key={f.key}
                   className={`filter-btn${dateRange === f.key ? ' active' : ''}`}
+                  aria-pressed={dateRange === f.key}
                   onClick={() => setDateRange(f.key)}
                 >
                   {f.label}
@@ -193,6 +194,7 @@ function TransactionsList({ transactions, currency }) {
                 <button
                   key={f.key}
                   className={`filter-btn${direction === f.key ? ' active' : ''}`}
+                  aria-pressed={direction === f.key}
                   onClick={() => setDirection(f.key)}
                 >
                   {f.label}
@@ -208,6 +210,7 @@ function TransactionsList({ transactions, currency }) {
                 <button
                   key={f.key}
                   className={`filter-btn${amountRange === f.key ? ' active' : ''}`}
+                  aria-pressed={amountRange === f.key}
                   onClick={() => setAmountRange(f.key)}
                 >
                   {f.label}
@@ -223,6 +226,7 @@ function TransactionsList({ transactions, currency }) {
                 <button
                   key={f.key}
                   className={`filter-btn${sortField === f.key ? ' active' : ''}`}
+                  aria-pressed={sortField === f.key}
                   onClick={() => setSortField(f.key)}
                 >
                   {f.label}
@@ -244,6 +248,7 @@ function TransactionsList({ transactions, currency }) {
               <div className="transactions-filters">
                 <button
                   className={`filter-btn${txType === 'all' ? ' active' : ''}`}
+                  aria-pressed={txType === 'all'}
                   onClick={() => setTxType('all')}
                 >
                   All
@@ -252,6 +257,7 @@ function TransactionsList({ transactions, currency }) {
                   <button
                     key={code}
                     className={`filter-btn${txType === code ? ' active' : ''}`}
+                    aria-pressed={txType === code}
                     onClick={() => setTxType(code)}
                   >
                     {code}

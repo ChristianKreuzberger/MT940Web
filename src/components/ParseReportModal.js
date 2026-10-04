@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { X, CheckCircle, AlertCircle, AlertTriangle, Copy, Check, ChevronDown, ChevronUp } from 'lucide-react';
+import { useModalFocus } from '../useModalFocus';
 import './ParseReportModal.css';
 
 function ParseReportModal({ result, error, fileName, onClose }) {
+  const dialogRef = useModalFocus();
   const [copied, setCopied] = useState(false);
   const [rawCopied, setRawCopied] = useState(false);
   const [rawOpen, setRawOpen] = useState(false);
@@ -34,7 +36,7 @@ function ParseReportModal({ result, error, fileName, onClose }) {
   const isSuccess = !error && result;
 
   return (
-    <div className="parse-report-overlay" onClick={onClose} role="dialog" aria-modal="true" aria-label="Parse Report">
+    <div className="parse-report-overlay" ref={dialogRef} tabIndex={-1} onClick={onClose} role="dialog" aria-modal="true" aria-label="Parse Report">
       <div className="parse-report-modal" onClick={(e) => e.stopPropagation()}>
         <div className={`parse-report-header ${isSuccess ? 'success' : 'failure'}`}>
           <div className="parse-report-title">

@@ -6,31 +6,35 @@ function TransactionCard({ transaction, currency }) {
   const [expanded, setExpanded] = useState(false);
   const isDebit = transaction.isDebit;
   const amount = Math.abs(transaction.amount);
+  const detailsId = `transaction-details-${transaction.id}`;
 
   return (
-    <div
-      className={`transaction-card${expanded ? ' expanded' : ''}`}
-      onClick={() => setExpanded(e => !e)}
-    >
-      <div className="transaction-header">
-        <div className="transaction-info">
-          <div className="transaction-date">{MT940Parser.formatDate(transaction.bookingDate)}</div>
+    <div className={`transaction-card${expanded ? ' expanded' : ''}`}>
+      <button
+        type="button"
+        className="transaction-header"
+        aria-expanded={expanded}
+        aria-controls={detailsId}
+        onClick={() => setExpanded(e => !e)}
+      >
+        <span className="transaction-info">
+          <span className="transaction-date">{MT940Parser.formatDate(transaction.bookingDate)}</span>
           <span className={`transaction-type ${isDebit ? 'debit' : 'credit'}`}>
             {isDebit ? '💸 Debit' : '💰 Credit'}
           </span>
           {transaction.reversal && <span className="reversal-badge">Reversal</span>}
-        </div>
-        <div className="transaction-header-right">
-          <div className={`transaction-amount ${isDebit ? 'debit' : 'credit'}`}>
+        </span>
+        <span className="transaction-header-right">
+          <span className={`transaction-amount ${isDebit ? 'debit' : 'credit'}`}>
             <span>{isDebit ? '−' : '+'}</span>
             <span>{MT940Parser.formatAmount(amount)}</span>
             <span className="amount-currency">{currency}</span>
-          </div>
-          <span className={`expand-icon${expanded ? ' open' : ''}`}>▾</span>
-        </div>
-      </div>
+          </span>
+          <span className={`expand-icon${expanded ? ' open' : ''}`} aria-hidden="true">▾</span>
+        </span>
+      </button>
 
-      {expanded && <div className="transaction-details">
+      {expanded && <div className="transaction-details" id={detailsId}>
         {transaction.transactionCode && (
           <div className="detail-item">
             <div className="detail-label">Transaction Code</div>

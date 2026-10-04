@@ -1,8 +1,10 @@
 import React, { useEffect } from 'react';
 import { X, FileText, Upload, Download, Shield, Zap } from 'lucide-react';
+import { useModalFocus } from '../useModalFocus';
 import './HelpModal.css';
 
 function HelpModal({ onClose }) {
+  const dialogRef = useModalFocus();
   useEffect(() => {
     function onKey(e) {
       if (e.key === 'Escape') onClose();
@@ -12,7 +14,7 @@ function HelpModal({ onClose }) {
   }, [onClose]);
 
   return (
-    <div className="help-overlay" onClick={onClose} role="dialog" aria-modal="true" aria-label="Help">
+    <div className="help-overlay" ref={dialogRef} tabIndex={-1} onClick={onClose} role="dialog" aria-modal="true" aria-label="Help">
       <div className="help-modal" onClick={(e) => e.stopPropagation()}>
         <div className="help-modal-header">
           <h2>How to use MT940 Parser</h2>

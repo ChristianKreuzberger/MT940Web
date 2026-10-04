@@ -7,6 +7,7 @@ const APP_VERSION = process.env.REACT_APP_VERSION || require('../../package.json
 function AppHeader({ onHelpOpen }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef(null);
+  const menuBtnRef = useRef(null);
 
   useEffect(() => {
     function handleClickOutside(e) {
@@ -19,6 +20,9 @@ function AppHeader({ onHelpOpen }) {
   }, []);
 
   const handleHelp = () => {
+    // The Help item unmounts with the menu; park focus on the Menu button so the
+    // modal can hand it back there on close.
+    menuBtnRef.current?.focus();
     setMenuOpen(false);
     onHelpOpen();
   };
@@ -32,6 +36,7 @@ function AppHeader({ onHelpOpen }) {
 
       <div className="app-header-menu" ref={menuRef}>
         <button
+          ref={menuBtnRef}
           className="app-header-menu-btn"
           onClick={() => setMenuOpen((v) => !v)}
           aria-haspopup="true"
