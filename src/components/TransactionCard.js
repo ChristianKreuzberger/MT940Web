@@ -19,6 +19,7 @@ function TransactionCard({ transaction, currency, index }) {
           <span className={`transaction-type ${isDebit ? 'debit' : 'credit'}`}>
             {isDebit ? '💸 Debit' : '💰 Credit'}
           </span>
+          {transaction.reversal && <span className="reversal-badge">Reversal</span>}
         </div>
         <div className="transaction-header-right">
           <div className={`transaction-amount ${isDebit ? 'debit' : 'credit'}`}>
@@ -35,6 +36,13 @@ function TransactionCard({ transaction, currency, index }) {
           <div className="detail-item">
             <div className="detail-label">Transaction Code</div>
             <div className="detail-value">{transaction.transactionCode}</div>
+          </div>
+        )}
+
+        {transaction.fundsCode && (
+          <div className="detail-item">
+            <div className="detail-label">Funds Code</div>
+            <div className="detail-value">{transaction.fundsCode}</div>
           </div>
         )}
 
@@ -88,6 +96,7 @@ function TransactionCard({ transaction, currency, index }) {
         )}
 
         {!transaction.transactionCode &&
+          !transaction.fundsCode &&
           !transaction.description &&
           !transaction.details &&
           !transaction.sender &&

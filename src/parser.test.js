@@ -171,6 +171,56 @@ describe('MT940Parser.parse', () => {
         });
     });
 
+    describe('reversals and funds code', () => {
+        // Closing balance must match: the library rejects a wrong sign.
+        const parseOne = (txLine, closing) =>
+            parser.parse(mt940(...HEADER, txLine, `:62F:C260131EUR${closing}`)).transactions[0];
+
+        test('RC (reversal of credit) is money out and flagged as reversal', () => {
+            const tx = parseOne(':61:2601020102RC50,00NMSCREF', '950,00');
+            expect(tx.reversal).toBe(true);
+            expect(tx.amount).toBe(-50);
+            expect(tx.isDebit).toBe(true);
+        });
+
+        test('RD (reversal of debit) is money in and flagged as reversal', () => {
+            const tx = parseOne(':61:2601020102RD50,00NMSCREF', '1050,00');
+            expect(tx.reversal).toBe(true);
+            expect(tx.amount).toBe(50);
+            expect(tx.isDebit).toBe(false);
+        });
+
+        test('wrong closing balance for a reversal is rejected', () => {
+            expect(() => parseOne(':61:2601020102RC50,00NMSCREF', '1050,00')).toThrow();
+        });
+
+        test('normal bookings are not reversals and have no funds code', () => {
+            const tx = parseOne(':61:2601020102D50,00NMSCREF', '950,00');
+            expect(tx.reversal).toBe(false);
+            expect(tx.fundsCode).toBe('');
+        });
+
+        test('funds code is exposed when present', () => {
+            const tx = parseOne(':61:2601020102CR50,00NMSCREF', '1050,00');
+            expect(tx.fundsCode).toBe('R');
+            expect(tx.reversal).toBe(false);
+        });
+
+        test('reversal and funds code can combine', () => {
+            const tx = parseOne(':61:2601020102RCR50,00NMSCREF', '950,00');
+            expect(tx.reversal).toBe(true);
+            expect(tx.fundsCode).toBe('R');
+            expect(tx.amount).toBe(-50);
+        });
+
+        test('public/sample.mt940 contains exactly one reversal', () => {
+            const text = require('fs').readFileSync(
+                require('path').join(__dirname, '..', 'public', 'sample.mt940'), 'utf8');
+            const result = parser.parse(text);
+            expect(result.transactions.filter(t => t.reversal)).toHaveLength(1);
+        });
+    });
+
     describe('invalid input', () => {
         test.each([
             ['empty string', ''],
