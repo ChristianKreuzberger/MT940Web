@@ -135,3 +135,32 @@ describe('custom period filter', () => {
         expect(cards()).toHaveLength(100);
     });
 });
+
+const filterGroups = () => [...container.querySelectorAll('.filter-group')];
+
+test('every filter button exposes aria-pressed and each group has exactly one pressed', () => {
+    render(make(3));
+    const groups = filterGroups();
+    expect(groups.length).toBeGreaterThanOrEqual(4);
+    groups.forEach((g) => {
+        const btns = [...g.querySelectorAll('.filter-btn:not(.sort-dir-btn)')];
+        expect(btns.length).toBeGreaterThan(0);
+        btns.forEach((b) => expect(['true', 'false']).toContain(b.getAttribute('aria-pressed')));
+        expect(btns.filter((b) => b.getAttribute('aria-pressed') === 'true')).toHaveLength(1);
+    });
+});
+
+test('clicking a filter flips aria-pressed', () => {
+    render(make(3));
+    expect(button('Debit').getAttribute('aria-pressed')).toBe('false');
+    click(button('Debit'));
+    expect(button('Debit').getAttribute('aria-pressed')).toBe('true');
+    expect(button('Custom').getAttribute('aria-pressed')).toBe('false');
+    click(button('Custom'));
+    expect(button('Custom').getAttribute('aria-pressed')).toBe('true');
+});
+
+test('the sort direction toggle has no aria-pressed', () => {
+    render(make(3));
+    expect(container.querySelector('.sort-dir-btn').hasAttribute('aria-pressed')).toBe(false);
+});
