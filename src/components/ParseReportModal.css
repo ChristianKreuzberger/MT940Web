@@ -300,3 +300,7 @@
   background: rgba(99, 102, 241, 0.2);
   color: #c7d2fe;
 }
+
+.parse-report-overlay:focus {
+  outline: none;
+}

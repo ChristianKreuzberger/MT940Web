@@ -31,7 +31,7 @@ const cards = () => container.querySelectorAll('.transaction-card');
 
 test('an expanded card stays expanded after the sort changes', () => {
     render(make(3));
-    click(cards()[0]); // date asc: Description 0 (amount 1)
+    click(cards()[0].querySelector('.transaction-header')); // date asc: Description 0 (amount 1)
     expect(container.querySelector('.transaction-card.expanded').textContent).toContain('Description 0');
 
     click(button('Amount'));
@@ -134,4 +134,35 @@ describe('custom period filter', () => {
         setRange(undefined, '2026-01-20');
         expect(cards()).toHaveLength(100);
     });
+});
+
+const filterGroups = () => [...container.querySelectorAll('.filter-group')];
+
+test('every filter button exposes aria-pressed and each group has exactly one pressed', () => {
+    render(make(3));
+    const groups = filterGroups();
+    expect(groups.length).toBeGreaterThanOrEqual(4);
+    groups.forEach((g) => {
+        const btns = [...g.querySelectorAll('.filter-btn:not(.sort-dir-btn)')];
+        expect(btns.length).toBeGreaterThan(0);
+        btns.forEach((b) => expect(['true', 'false']).toContain(b.getAttribute('aria-pressed')));
+        expect(btns.filter((b) => b.getAttribute('aria-pressed') === 'true')).toHaveLength(1);
+    });
+});
+
+const filterBtn = (text) => [...container.querySelectorAll('.filter-btn')].find((b) => b.textContent.includes(text));
+
+test('clicking a filter flips aria-pressed', () => {
+    render(make(3));
+    expect(filterBtn('Outgoing').getAttribute('aria-pressed')).toBe('false');
+    click(filterBtn('Outgoing'));
+    expect(filterBtn('Outgoing').getAttribute('aria-pressed')).toBe('true');
+    expect(filterBtn('Custom').getAttribute('aria-pressed')).toBe('false');
+    click(filterBtn('Custom'));
+    expect(filterBtn('Custom').getAttribute('aria-pressed')).toBe('true');
+});
+
+test('the sort direction toggle has no aria-pressed', () => {
+    render(make(3));
+    expect(container.querySelector('.sort-dir-btn').hasAttribute('aria-pressed')).toBe(false);
 });
