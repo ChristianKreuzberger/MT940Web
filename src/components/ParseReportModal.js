@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { X, CheckCircle, AlertCircle, Copy, Check, ChevronDown, ChevronUp } from 'lucide-react';
+import { X, CheckCircle, AlertCircle, AlertTriangle, Copy, Check, ChevronDown, ChevronUp } from 'lucide-react';
 import './ParseReportModal.css';
 
 function ParseReportModal({ result, error, fileName, onClose }) {
@@ -58,6 +58,16 @@ function ParseReportModal({ result, error, fileName, onClose }) {
 
           {isSuccess ? (
             <>
+              {result.warnings?.length > 0 && (
+                <div className="parse-warning-section" role="alert">
+                  <div className="parse-warning-label">
+                    <AlertTriangle size={14} /> Warnings
+                  </div>
+                  <ul className="parse-warning-list">
+                    {result.warnings.map((w, i) => <li key={i}>{w}</li>)}
+                  </ul>
+                </div>
+              )}
               <div className="parse-report-stats">
                 {result.statementCount > 1 && (
                   <div className="parse-stat-row">
