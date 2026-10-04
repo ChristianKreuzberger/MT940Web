@@ -32,7 +32,7 @@ function formatYAxis(value) {
   return value.toFixed(0);
 }
 
-function buildDailyBalanceData(transactions, openingBalance) {
+export function buildDailyBalanceData(transactions, openingBalance) {
   // Group net amount per day
   const byDay = {};
   transactions.forEach((tx) => {

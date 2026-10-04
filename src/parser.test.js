@@ -231,4 +231,11 @@ describe('MT940Parser.parse', () => {
             expect(() => parser.parse(input)).toThrow(/No valid MT940 statements/);
         });
     });
+
+    describe('formatDate', () => {
+        test('shows the stored calendar day regardless of local timezone', () => {
+            expect(MT940Parser.formatDate('2026-01-02')).toBe('January 2, 2026');
+            expect(MT940Parser.formatDate('2026-10-25')).toBe('October 25, 2026');
+        });
+    });
 });
