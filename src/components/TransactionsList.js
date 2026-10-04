@@ -1,7 +1,7 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import TransactionCard from './TransactionCard';
 import SummaryModal from './SummaryModal';
-import { getCutoffISO } from '../dateUtils';
+import { filterTransactions, sortTransactions } from '../transactionFilters';
 import { PAGE_SIZE, visibleItems, nextCount, hasMore } from '../paging';
 import './TransactionsList.css';
 
@@ -33,7 +33,7 @@ const SORT_FIELDS = [
   { key: 'amount', label: 'Amount' },
 ];
 
-function TransactionsList({ transactions, currency }) {
+function TransactionsList({ transactions, currency, onFilteredChange }) {
   const [direction, setDirection] = useState('all');
   const [amountRange, setAmountRange] = useState('all');
   const [txType, setTxType] = useState('all');
@@ -61,12 +61,17 @@ function TransactionsList({ transactions, currency }) {
     return codes.sort();
   }, [transactions]);
 
-  const dateThreshold = useMemo(() => {
-    if (dateRange === 'all' || dateRange === 'custom') return null;
-    // Use the most recent booking date in the file as the reference point
-    // so the filter still works on historical files.
-    return getCutoffISO((transactions || []).map((t) => t.bookingDate), dateRange);
-  }, [dateRange, transactions]);
+  const filtered = useMemo(
+    () => filterTransactions(transactions || [], { direction, amountRange, txType, dateRange, customFrom, customTo }),
+    [transactions, direction, amountRange, txType, dateRange, customFrom, customTo]
+  );
+  const sorted = useMemo(() => sortTransactions(filtered, sortField, sortDir), [filtered, sortField, sortDir]);
+
+  // Lets the parent (CSV export) see what is currently displayed. Keyed on the
+  // memoized array so it only fires when the result really changes.
+  useEffect(() => {
+    if (onFilteredChange) onFilteredChange(sorted);
+  }, [sorted, onFilteredChange]);
 
   if (!transactions || transactions.length === 0) {
     return (
@@ -80,45 +85,6 @@ function TransactionsList({ transactions, currency }) {
       </div>
     );
   }
-
-  const filtered = transactions.filter((t) => {
-    // Direction
-    if (direction === 'credit' && t.isDebit) return false;
-    if (direction === 'debit' && !t.isDebit) return false;
-
-    // Amount range
-    const abs = Math.abs(t.amount);
-    if (amountRange === 'small' && abs >= 100) return false;
-    if (amountRange === 'medium' && (abs < 100 || abs > 1000)) return false;
-    if (amountRange === 'large' && abs <= 1000) return false;
-
-    // Transaction type
-    if (txType !== 'all' && t.transactionCode !== txType) return false;
-
-    // Date range
-    if (dateThreshold && t.bookingDate) {
-      if (t.bookingDate < dateThreshold) return false;
-    }
-    // Custom range: inclusive, plain YYYY-MM-DD string comparison ('' = unbounded)
-    if (dateRange === 'custom' && t.bookingDate) {
-      if (customFrom && t.bookingDate < customFrom) return false;
-      if (customTo && t.bookingDate > customTo) return false;
-    }
-
-    return true;
-  });
-
-  const sorted = [...filtered].sort((a, b) => {
-    let aVal, bVal;
-    if (sortField === 'date') {
-      aVal = a.bookingDate ? Date.parse(a.bookingDate) : 0;
-      bVal = b.bookingDate ? Date.parse(b.bookingDate) : 0;
-    } else {
-      aVal = Math.abs(a.amount ?? 0);
-      bVal = Math.abs(b.amount ?? 0);
-    }
-    return sortDir === 'asc' ? aVal - bVal : bVal - aVal;
-  });
 
   const hasActiveFilters = direction !== 'all' || amountRange !== 'all' || txType !== 'all' || dateRange !== 'all';
 

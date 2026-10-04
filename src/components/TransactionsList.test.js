@@ -166,3 +166,18 @@ test('the sort direction toggle has no aria-pressed', () => {
     render(make(3));
     expect(container.querySelector('.sort-dir-btn').hasAttribute('aria-pressed')).toBe(false);
 });
+
+test('reports the filtered and sorted list through onFilteredChange', () => {
+    const onFilteredChange = jest.fn();
+    const txs = [
+        { id: 1, bookingDate: '2026-01-02', amount: -5, isDebit: true },
+        { id: 2, bookingDate: '2026-01-03', amount: 7, isDebit: false },
+        { id: 3, bookingDate: '2026-01-01', amount: -9, isDebit: true },
+    ];
+    act(() => root.render(<TransactionsList transactions={txs} currency="EUR" onFilteredChange={onFilteredChange} />));
+    expect(onFilteredChange.mock.calls.at(-1)[0].map((t) => t.id)).toEqual([3, 1, 2]);
+
+    click(button('Outgoing'));
+    expect(onFilteredChange.mock.calls.at(-1)[0].map((t) => t.id)).toEqual([3, 1]);
+    expect(onFilteredChange.mock.calls.length).toBeLessThan(5);
+});
