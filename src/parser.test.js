@@ -239,3 +239,33 @@ describe('MT940Parser.parse', () => {
         });
     });
 });
+
+describe('transaction ids', () => {
+    const parser = new MT940Parser();
+    const stmt = (ref, num, openDate, open, txs, closeDate, close) => [
+        `:20:${ref}`, ':25:12345678/9876543210', `:28C:${num}/1`,
+        `:60F:C${openDate}EUR${open}`, ...txs.flat(), `:62F:C${closeDate}EUR${close}`,
+    ];
+
+    test('single statement: ids are the positions 0..n-1', () => {
+        const r = parser.parse(mt940(...HEADER, ...debitTx, ...creditTx, ...FOOTER_2TX));
+        expect(r.transactions.map(t => t.id)).toEqual([0, 1]);
+    });
+
+    test('multiple statements: ids follow the merged chronological order', () => {
+        const jan = stmt('S1', 1, '260101', '1000,00', [debitTx], '260131', '749,50');
+        const feb = stmt('S2', 2, '260201', '749,50', [creditTx], '260228', '849,50');
+        const r = parser.parse(mt940(...feb, ...jan));
+        expect(r.transactions.map(t => t.id)).toEqual([0, 1]);
+        expect(r.transactions.map(t => t.amount)).toEqual([-250.5, 100]);
+    });
+
+    test('5,000 transactions get unique ids', () => {
+        const txs = [];
+        for (let i = 0; i < 5000; i++) txs.push([':61:2601020102C1,00NTRFNONREF', `:86:166?00Test ${i}`]);
+        const r = parser.parse(mt940(...stmt('BIG', 1, '260101', '0,00', txs, '260131', '5000,00')));
+        expect(r.transactions).toHaveLength(5000);
+        expect(new Set(r.transactions.map(t => t.id)).size).toBe(5000);
+        expect(r.transactions[4999].id).toBe(4999);
+    });
+});
