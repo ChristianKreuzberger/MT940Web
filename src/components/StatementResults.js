@@ -26,6 +26,7 @@ function StatementResults({ data, onClear, onExport }) {
       <BalanceChart
         transactions={data.transactions}
         openingBalance={data.openingBalance}
+        closingBalance={data.closingBalance}
         currency={data.currency}
       />
       <TransactionsList transactions={data.transactions} currency={data.currency} />

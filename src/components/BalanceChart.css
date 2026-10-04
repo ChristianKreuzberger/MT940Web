@@ -114,3 +114,10 @@
 .tooltip-change.negative {
   color: #ef4444;
 }
+
+/* Reconciliation note */
+.balance-chart-note {
+  margin: 12px 0 0;
+  font-size: 0.8rem;
+  color: #f59e0b;
+}

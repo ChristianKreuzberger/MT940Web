@@ -10,14 +10,8 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import { MT940Parser } from '../parser';
-import { addDaysISO, toISODate } from '../dateUtils';
+import { buildDailyBalanceData, balanceDifference } from '../balanceData';
 import './BalanceChart.css';
-
-function toDateKey(date) {
-  return date instanceof Date
-    ? toISODate(date)
-    : String(date).slice(0, 10);
-}
 
 function formatXAxisDate(dateStr) {
   // dateStr is "YYYY-MM-DD"
@@ -31,33 +25,6 @@ function formatYAxis(value) {
   if (abs >= 1_000_000) return `${(value / 1_000_000).toFixed(1)}M`;
   if (abs >= 1_000) return `${(value / 1_000).toFixed(1)}K`;
   return value.toFixed(0);
-}
-
-export function buildDailyBalanceData(transactions, openingBalance) {
-  // Group net amount per day
-  const byDay = {};
-  transactions.forEach((tx) => {
-    const key = toDateKey(tx.bookingDate);
-    const signed = tx.isDebit ? -Math.abs(tx.amount) : Math.abs(tx.amount);
-    byDay[key] = (byDay[key] || 0) + signed;
-  });
-
-  const days = Object.keys(byDay).sort();
-  if (days.length === 0) return [];
-
-  // Prepend the opening balance as the day before the first transaction
-  const firstDay = days[0];
-  const openKey = addDaysISO(firstDay, -1);
-
-  const points = [{ date: openKey, balance: Math.round((openingBalance || 0) * 100) / 100 }];
-
-  let balance = openingBalance || 0;
-  days.forEach((day) => {
-    balance = Math.round((balance + byDay[day]) * 100) / 100;
-    points.push({ date: day, balance });
-  });
-
-  return points;
 }
 
 const CustomTooltip = ({ active, payload, currency }) => {
@@ -81,7 +48,7 @@ const CustomTooltip = ({ active, payload, currency }) => {
   );
 };
 
-function BalanceChart({ transactions, openingBalance, currency }) {
+function BalanceChart({ transactions, openingBalance, closingBalance, currency }) {
   const rawData = buildDailyBalanceData(transactions, openingBalance);
 
   if (rawData.length === 0) return null;
@@ -102,6 +69,7 @@ function BalanceChart({ transactions, openingBalance, currency }) {
   const minBalance = Math.min(...balances);
   const maxBalance = Math.max(...balances);
   const lastBalance = balances[balances.length - 1];
+  const difference = balanceDifference(lastBalance, closingBalance);
 
   return (
     <div className="balance-chart-container">
@@ -168,6 +136,12 @@ function BalanceChart({ transactions, openingBalance, currency }) {
           />
         </AreaChart>
       </ResponsiveContainer>
+      {difference !== null && (
+        <p className="balance-chart-note" role="note">
+          Computed balance differs from statement closing balance by{' '}
+          {MT940Parser.formatAmount(Math.abs(difference))} {currency}
+        </p>
+      )}
     </div>
   );
 }
