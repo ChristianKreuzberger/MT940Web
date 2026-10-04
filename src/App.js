@@ -72,17 +72,8 @@ function App() {
       <div className="app-content">
         {!statementData && !error && (
           <header>
-            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '20px' }}>
-              <div style={{
-                width: '80px',
-                height: '80px',
-                background: 'linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%)',
-                borderRadius: '20px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '40px'
-              }}>
+            <div className="landing-icon-wrap">
+              <div className="landing-icon">
                 💳
               </div>
             </div>

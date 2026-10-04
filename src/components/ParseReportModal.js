@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { X, CheckCircle, AlertCircle, AlertTriangle, Copy, Check, ChevronDown, ChevronUp } from 'lucide-react';
 import { useModalFocus } from '../useModalFocus';
+import { useEscapeKey } from '../useEscapeKey';
 import './ParseReportModal.css';
 
 function ParseReportModal({ result, error, fileName, onClose }) {
@@ -9,13 +10,7 @@ function ParseReportModal({ result, error, fileName, onClose }) {
   const [rawCopied, setRawCopied] = useState(false);
   const [rawOpen, setRawOpen] = useState(false);
 
-  useEffect(() => {
-    function onKey(e) {
-      if (e.key === 'Escape') onClose();
-    }
-    document.addEventListener('keydown', onKey);
-    return () => document.removeEventListener('keydown', onKey);
-  }, [onClose]);
+  useEscapeKey(onClose);
 
   const handleCopy = () => {
     navigator.clipboard.writeText(error).then(() => {
