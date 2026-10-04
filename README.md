@@ -40,7 +40,7 @@ src/
 public/
   sample.mt940      - Sample MT940 file for testing
 parser.js           - Standalone parser (Node.js)
-test_parser.js      - Parser tests
+src/parser.test.js - Parser tests (Jest)
 ```
 
 ## MT940 Format Overview
