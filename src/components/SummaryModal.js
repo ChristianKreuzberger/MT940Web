@@ -1,6 +1,9 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { X } from 'lucide-react';
 import { MT940Parser } from '../parser';
+import { useModalFocus } from '../useModalFocus';
+import { useEscapeKey } from '../useEscapeKey';
+import { summaryBucketLabel } from '../amountBuckets';
 import './SummaryModal.css';
 
 const COUNTRY_NAMES = {
@@ -24,7 +27,7 @@ const COUNTRY_NAMES = {
   VA: 'Vatican', VG: 'British Virgin Islands', XK: 'Kosovo',
 };
 
-function groupBy(transactions, keyFn, label = 'key') {
+function groupBy(transactions, keyFn) {
   const groups = {};
   for (const t of transactions) {
     const key = keyFn(t) || '(unknown)';
@@ -79,24 +82,13 @@ function SummarySection({ title, rows, currency }) {
 }
 
 function SummaryModal({ transactions, currency, onClose }) {
-  useEffect(() => {
-    function onKey(e) {
-      if (e.key === 'Escape') onClose();
-    }
-    document.addEventListener('keydown', onKey);
-    return () => document.removeEventListener('keydown', onKey);
-  }, [onClose]);
+  const dialogRef = useModalFocus();
+  useEscapeKey(onClose);
 
   const summary = useMemo(() => {
     if (!transactions || transactions.length === 0) return null;
 
-    const amountBuckets = groupBy(transactions, (t) => {
-      const abs = Math.abs(t.amount);
-      if (abs < 100) return '< 100';
-      if (abs <= 1000) return '100 – 1 000';
-      if (abs <= 10000) return '1 000 – 10 000';
-      return '> 10 000';
-    });
+    const amountBuckets = groupBy(transactions, (t) => summaryBucketLabel(Math.abs(t.amount)));
 
     const byReceiver = groupBy(transactions, (t) => t.receiver || null);
     const byCode = groupBy(transactions, (t) => t.transactionCode || null);
@@ -110,7 +102,7 @@ function SummaryModal({ transactions, currency, onClose }) {
   }, [transactions]);
 
   return (
-    <div className="summary-overlay" onClick={onClose} role="dialog" aria-modal="true" aria-label="Transaction Summary">
+    <div className="summary-overlay" ref={dialogRef} tabIndex={-1} onClick={onClose} role="dialog" aria-modal="true" aria-label="Transaction Summary">
       <div className="summary-modal" onClick={(e) => e.stopPropagation()}>
         <div className="summary-modal-header">
           <h2>Transaction Summary</h2>

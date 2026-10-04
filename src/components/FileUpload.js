@@ -11,6 +11,14 @@ function FileUpload({ onFileUpload, error, loading }) {
     fileInputRef.current?.click();
   };
 
+  const handleKeyDown = (e) => {
+    if (e.target !== e.currentTarget) return;
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      if (!loading) handleClick();
+    }
+  };
+
   const handleFileSelect = (e) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -46,7 +54,11 @@ function FileUpload({ onFileUpload, error, loading }) {
       <div
         ref={uploadCardRef}
         className={`upload-card ${isDragOver ? 'drag-over' : ''}`}
+        role="button"
+        tabIndex={0}
+        aria-disabled={loading}
         onClick={handleClick}
+        onKeyDown={handleKeyDown}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
@@ -54,7 +66,7 @@ function FileUpload({ onFileUpload, error, loading }) {
         <input
           ref={fileInputRef}
           type="file"
-          accept=".mt940,.mta,.txt"
+          accept=".mt940,.mta,.sta,.txt"
           onChange={handleFileSelect}
           disabled={loading}
         />

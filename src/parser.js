@@ -5,6 +5,10 @@
  */
 import { Parser as LibParser } from '@tripss/mt940js';
 
+// The id is the position in the final (merged, chronological) list. It is
+// assigned here, not per statement, so ids stay unique across statements.
+const withIds = transactions => transactions.map((t, i) => ({ ...t, id: i }));
+
 export class MT940Parser {
     // ─── Public API ──────────────────────────────────────────────────────────
 
@@ -18,17 +22,24 @@ export class MT940Parser {
             }
 
             if (statements.length === 1) {
-                return this._adaptStatement(statements[0]);
+                const only = this._adaptStatement(statements[0]);
+                return { ...only, transactions: withIds(only.transactions) };
             }
 
             // Multiple statement blocks in one file (e.g. daily exports merged
-            // into a single file). Merge them: take metadata from the first,
-            // closing balance/date from the last, and concatenate all transactions.
-            const first = this._adaptStatement(statements[0]);
-            const last  = this._adaptStatement(statements[statements.length - 1]);
-            const allTransactions = statements.flatMap(s =>
-                (s.transactions || []).map(t => this._adaptTransaction(t))
-            );
+            // into a single file). Order them chronologically by opening date so
+            // the first/last balances are right even if the file is shuffled.
+            // Ties (and missing dates) keep file order because the sort is stable.
+            // Assumes all statements belong to the same account and currency.
+            const sorted = statements
+                .map(s => this._adaptStatement(s))
+                .sort((x, y) => {
+                    const a = x.statementPeriod.startDate;
+                    const b = y.statementPeriod.startDate;
+                    return a && b ? (a < b ? -1 : a > b ? 1 : 0) : 0;
+                });
+            const first = sorted[0];
+            const last  = sorted[sorted.length - 1];
 
             return {
                 ...first,
@@ -37,12 +48,32 @@ export class MT940Parser {
                     startDate: first.statementPeriod.startDate,
                     endDate:   last.statementPeriod.endDate,
                 },
-                transactions: allTransactions,
-                statementCount: statements.length,
+                transactions: withIds(sorted.flatMap(s => s.transactions)),
+                statementCount: sorted.length,
+                warnings: this._checkMergedBalances(first, last, sorted),
             };
         } catch (err) {
             throw new Error(`Failed to parse MT940 file: ${err.message}`);
         }
+    }
+
+    // Each statement is already validated by the library, so a mismatch here
+    // means statements are missing, overlapping or duplicated.
+    _checkMergedBalances(first, last, sorted) {
+        if (first.openingBalance == null || last.closingBalance == null) return [];
+        const toCents = x => Math.round(x * 100);
+        const txCents = sorted.reduce(
+            (sum, s) => s.transactions.reduce((n, t) => n + toCents(t.amount), sum), 0);
+        const expected = toCents(first.openingBalance) + txCents;
+        const actual = toCents(last.closingBalance);
+        if (expected === actual) return [];
+        const fmt = c => MT940Parser.formatAmount(c / 100);
+        return [
+            `Opening balance ${fmt(toCents(first.openingBalance))} + transactions ` +
+            `(${fmt(txCents)}) does not equal closing balance ${fmt(actual)} ` +
+            `(difference ${fmt(Math.abs(actual - expected))}). ` +
+            `A statement may be missing, overlapping or duplicated.`,
+        ];
     }
 
     // ─── Adapter ─────────────────────────────────────────────────────────────
@@ -140,18 +171,20 @@ export class MT940Parser {
         return result;
     }
 
-    static formatAmount(amount) {
-        return new Intl.NumberFormat('en-US', {
+    // locale undefined = the browser's locale
+    static formatAmount(amount, locale = undefined) {
+        return new Intl.NumberFormat(locale, {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2,
         }).format(amount);
     }
 
-    static formatDate(dateStr) {
+    static formatDate(dateStr, locale = undefined) {
         if (!dateStr) return 'N/A';
         try {
             const date = new Date(dateStr + 'T00:00:00Z');
-            return date.toLocaleDateString('en-US', {
+            return date.toLocaleDateString(locale, {
+                timeZone: 'UTC',
                 year: 'numeric',
                 month: 'long',
                 day: 'numeric',

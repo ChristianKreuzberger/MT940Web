@@ -1,10 +1,13 @@
 import React, { useState } from 'react';
 import { MT940Parser } from './parser';
+import { decodeMt940Bytes } from './decodeText';
 import FileUpload from './components/FileUpload';
 import StatementResults from './components/StatementResults';
 import AppHeader from './components/AppHeader';
 import HelpModal from './components/HelpModal';
 import ParseReportModal from './components/ParseReportModal';
+import { transactionsToCsv, csvFilename } from './csv';
+import { downloadBlob } from './download';
 import './App.css';
 import { Upload } from 'lucide-react';
 
@@ -21,7 +24,7 @@ function App() {
     setStatementData(null);
 
     try {
-      const content = await file.text();
+      const content = decodeMt940Bytes(await file.arrayBuffer());
       const parser = new MT940Parser();
       const data = parser.parse(content);
       setStatementData(data);
@@ -44,12 +47,14 @@ function App() {
 
     const dataStr = JSON.stringify(statementData, null, 2);
     const dataBlob = new Blob([dataStr], { type: 'application/json' });
-    const url = URL.createObjectURL(dataBlob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `mt940-statement-${Date.now()}.json`;
-    link.click();
-    URL.revokeObjectURL(url);
+    downloadBlob(dataBlob, `mt940-statement-${Date.now()}.json`);
+  };
+
+  const handleExportCsv = (transactions, { filtered }) => {
+    if (!statementData) return;
+    const csv = transactionsToCsv(transactions, statementData.currency);
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+    downloadBlob(blob, csvFilename(statementData.statementPeriod, { filtered }));
   };
 
   return (
@@ -67,17 +72,8 @@ function App() {
       <div className="app-content">
         {!statementData && !error && (
           <header>
-            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '20px' }}>
-              <div style={{
-                width: '80px',
-                height: '80px',
-                background: 'linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%)',
-                borderRadius: '20px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '40px'
-              }}>
+            <div className="landing-icon-wrap">
+              <div className="landing-icon">
                 💳
               </div>
             </div>
@@ -95,7 +91,7 @@ function App() {
                 🔒 Client-side
               </span>
               <span className="badge">
-                📊 Export JSON
+                📊 Export JSON / CSV
               </span>
             </div>
           </header>
@@ -113,6 +109,7 @@ function App() {
               data={statementData}
               onClear={handleClear}
               onExport={handleExport}
+              onExportCsv={handleExportCsv}
             />
           )}
         </main>

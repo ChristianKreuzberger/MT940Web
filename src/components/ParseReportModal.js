@@ -1,19 +1,16 @@
-import React, { useEffect, useState } from 'react';
-import { X, CheckCircle, AlertCircle, Copy, Check, ChevronDown, ChevronUp } from 'lucide-react';
+import React, { useState } from 'react';
+import { X, CheckCircle, AlertCircle, AlertTriangle, Copy, Check, ChevronDown, ChevronUp } from 'lucide-react';
+import { useModalFocus } from '../useModalFocus';
+import { useEscapeKey } from '../useEscapeKey';
 import './ParseReportModal.css';
 
 function ParseReportModal({ result, error, fileName, onClose }) {
+  const dialogRef = useModalFocus();
   const [copied, setCopied] = useState(false);
   const [rawCopied, setRawCopied] = useState(false);
   const [rawOpen, setRawOpen] = useState(false);
 
-  useEffect(() => {
-    function onKey(e) {
-      if (e.key === 'Escape') onClose();
-    }
-    document.addEventListener('keydown', onKey);
-    return () => document.removeEventListener('keydown', onKey);
-  }, [onClose]);
+  useEscapeKey(onClose);
 
   const handleCopy = () => {
     navigator.clipboard.writeText(error).then(() => {
@@ -34,7 +31,7 @@ function ParseReportModal({ result, error, fileName, onClose }) {
   const isSuccess = !error && result;
 
   return (
-    <div className="parse-report-overlay" onClick={onClose} role="dialog" aria-modal="true" aria-label="Parse Report">
+    <div className="parse-report-overlay" ref={dialogRef} tabIndex={-1} onClick={onClose} role="dialog" aria-modal="true" aria-label="Parse Report">
       <div className="parse-report-modal" onClick={(e) => e.stopPropagation()}>
         <div className={`parse-report-header ${isSuccess ? 'success' : 'failure'}`}>
           <div className="parse-report-title">
@@ -58,6 +55,16 @@ function ParseReportModal({ result, error, fileName, onClose }) {
 
           {isSuccess ? (
             <>
+              {result.warnings?.length > 0 && (
+                <div className="parse-warning-section" role="alert">
+                  <div className="parse-warning-label">
+                    <AlertTriangle size={14} /> Warnings
+                  </div>
+                  <ul className="parse-warning-list">
+                    {result.warnings.map((w, i) => <li key={i}>{w}</li>)}
+                  </ul>
+                </div>
+              )}
               <div className="parse-report-stats">
                 {result.statementCount > 1 && (
                   <div className="parse-stat-row">

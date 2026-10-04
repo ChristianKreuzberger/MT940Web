@@ -1,0 +1,32 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - name: Test (timezone matrix)
+        run: |
+          for tz in UTC Europe/Berlin America/Los_Angeles; do
+            echo "::group::TZ=$tz"
+            TZ=$tz npm test -- --watchAll=false
+            echo "::endgroup::"
+          done
+      - run: npm run build

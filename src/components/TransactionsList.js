@@ -1,6 +1,8 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import TransactionCard from './TransactionCard';
 import SummaryModal from './SummaryModal';
+import { filterTransactions, sortTransactions } from '../transactionFilters';
+import { PAGE_SIZE, visibleItems, nextCount, hasMore } from '../paging';
 import './TransactionsList.css';
 
 const DIRECTION_FILTERS = [
@@ -23,6 +25,7 @@ const DATE_FILTERS = [
   { key: '90', label: 'Last 90 days' },
   { key: '180', label: 'Last 180 days' },
   { key: '270', label: 'Last 270 days' },
+  { key: 'custom', label: 'Custom' },
 ];
 
 const SORT_FIELDS = [
@@ -30,14 +33,26 @@ const SORT_FIELDS = [
   { key: 'amount', label: 'Amount' },
 ];
 
-function TransactionsList({ transactions, currency }) {
+function TransactionsList({ transactions, currency, onFilteredChange }) {
   const [direction, setDirection] = useState('all');
   const [amountRange, setAmountRange] = useState('all');
   const [txType, setTxType] = useState('all');
   const [dateRange, setDateRange] = useState('all');
+  const [customFrom, setCustomFrom] = useState('');
+  const [customTo, setCustomTo] = useState('');
   const [sortField, setSortField] = useState('date');
   const [sortDir, setSortDir] = useState('asc');
   const [showSummary, setShowSummary] = useState(false);
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+
+  // Back to the first page whenever the filters, sort or data change. Done
+  // during render (not by remounting the grid) so expanded cards stay open.
+  const pagingSig = [direction, amountRange, txType, dateRange, customFrom, customTo, sortField, sortDir].join('|');
+  const [pagedFor, setPagedFor] = useState({ pagingSig, transactions });
+  if (pagedFor.pagingSig !== pagingSig || pagedFor.transactions !== transactions) {
+    setPagedFor({ pagingSig, transactions });
+    setVisibleCount(PAGE_SIZE);
+  }
 
   // Derive unique transaction codes present in the data
   const txTypes = useMemo(() => {
@@ -46,20 +61,17 @@ function TransactionsList({ transactions, currency }) {
     return codes.sort();
   }, [transactions]);
 
-  const dateThreshold = useMemo(() => {
-    if (dateRange === 'all') return null;
-    // Use the most recent booking date in the file as the reference point
-    // so the filter still works on historical files.
-    const dates = (transactions || [])
-      .map((t) => t.bookingDate)
-      .filter(Boolean)
-      .map((d) => new Date(d).getTime())
-      .filter((n) => !isNaN(n));
-    const latest = dates.length ? Math.max(...dates) : Date.now();
-    const cutoff = new Date(latest);
-    cutoff.setDate(cutoff.getDate() - Number(dateRange));
-    return cutoff;
-  }, [dateRange, transactions]);
+  const filtered = useMemo(
+    () => filterTransactions(transactions || [], { direction, amountRange, txType, dateRange, customFrom, customTo }),
+    [transactions, direction, amountRange, txType, dateRange, customFrom, customTo]
+  );
+  const sorted = useMemo(() => sortTransactions(filtered, sortField, sortDir), [filtered, sortField, sortDir]);
+
+  // Lets the parent (CSV export) see what is currently displayed. Keyed on the
+  // memoized array so it only fires when the result really changes.
+  useEffect(() => {
+    if (onFilteredChange) onFilteredChange(sorted);
+  }, [sorted, onFilteredChange]);
 
   if (!transactions || transactions.length === 0) {
     return (
@@ -74,40 +86,6 @@ function TransactionsList({ transactions, currency }) {
     );
   }
 
-  const filtered = transactions.filter((t) => {
-    // Direction
-    if (direction === 'credit' && t.isDebit) return false;
-    if (direction === 'debit' && !t.isDebit) return false;
-
-    // Amount range
-    const abs = Math.abs(t.amount);
-    if (amountRange === 'small' && abs >= 100) return false;
-    if (amountRange === 'medium' && (abs < 100 || abs > 1000)) return false;
-    if (amountRange === 'large' && abs <= 1000) return false;
-
-    // Transaction type
-    if (txType !== 'all' && t.transactionCode !== txType) return false;
-
-    // Date range
-    if (dateThreshold && t.bookingDate) {
-      if (new Date(t.bookingDate) < dateThreshold) return false;
-    }
-
-    return true;
-  });
-
-  const sorted = [...filtered].sort((a, b) => {
-    let aVal, bVal;
-    if (sortField === 'date') {
-      aVal = a.bookingDate ? new Date(a.bookingDate).getTime() : 0;
-      bVal = b.bookingDate ? new Date(b.bookingDate).getTime() : 0;
-    } else {
-      aVal = Math.abs(a.amount ?? 0);
-      bVal = Math.abs(b.amount ?? 0);
-    }
-    return sortDir === 'asc' ? aVal - bVal : bVal - aVal;
-  });
-
   const hasActiveFilters = direction !== 'all' || amountRange !== 'all' || txType !== 'all' || dateRange !== 'all';
 
   function resetFilters() {
@@ -115,6 +93,8 @@ function TransactionsList({ transactions, currency }) {
     setAmountRange('all');
     setTxType('all');
     setDateRange('all');
+    setCustomFrom('');
+    setCustomTo('');
   }
 
   return (
@@ -150,12 +130,27 @@ function TransactionsList({ transactions, currency }) {
                 <button
                   key={f.key}
                   className={`filter-btn${dateRange === f.key ? ' active' : ''}`}
+                  aria-pressed={dateRange === f.key}
                   onClick={() => setDateRange(f.key)}
                 >
                   {f.label}
                 </button>
               ))}
             </div>
+            {dateRange === 'custom' && (
+              <div className="custom-range">
+                <label>
+                  From
+                  <input type="date" value={customFrom} max={customTo || undefined}
+                    onChange={(e) => setCustomFrom(e.target.value)} />
+                </label>
+                <label>
+                  To
+                  <input type="date" value={customTo} min={customFrom || undefined}
+                    onChange={(e) => setCustomTo(e.target.value)} />
+                </label>
+              </div>
+            )}
           </div>
 
           <div className="filter-group">
@@ -165,6 +160,7 @@ function TransactionsList({ transactions, currency }) {
                 <button
                   key={f.key}
                   className={`filter-btn${direction === f.key ? ' active' : ''}`}
+                  aria-pressed={direction === f.key}
                   onClick={() => setDirection(f.key)}
                 >
                   {f.label}
@@ -180,6 +176,7 @@ function TransactionsList({ transactions, currency }) {
                 <button
                   key={f.key}
                   className={`filter-btn${amountRange === f.key ? ' active' : ''}`}
+                  aria-pressed={amountRange === f.key}
                   onClick={() => setAmountRange(f.key)}
                 >
                   {f.label}
@@ -195,6 +192,7 @@ function TransactionsList({ transactions, currency }) {
                 <button
                   key={f.key}
                   className={`filter-btn${sortField === f.key ? ' active' : ''}`}
+                  aria-pressed={sortField === f.key}
                   onClick={() => setSortField(f.key)}
                 >
                   {f.label}
@@ -216,6 +214,7 @@ function TransactionsList({ transactions, currency }) {
               <div className="transactions-filters">
                 <button
                   className={`filter-btn${txType === 'all' ? ' active' : ''}`}
+                  aria-pressed={txType === 'all'}
                   onClick={() => setTxType('all')}
                 >
                   All
@@ -224,6 +223,7 @@ function TransactionsList({ transactions, currency }) {
                   <button
                     key={code}
                     className={`filter-btn${txType === code ? ' active' : ''}`}
+                    aria-pressed={txType === code}
                     onClick={() => setTxType(code)}
                   >
                     {code}
@@ -241,15 +241,22 @@ function TransactionsList({ transactions, currency }) {
         </div>
       ) : (
         <div className="transactions-grid">
-          {sorted.map((transaction, index) => (
+          {visibleItems(sorted, visibleCount).map((transaction) => (
             <TransactionCard
-              key={index}
+              key={transaction.id}
               transaction={transaction}
               currency={currency}
-              index={index}
             />
           ))}
         </div>
+      )}
+      {hasMore(visibleCount, sorted.length) && (
+        <button
+          className="filter-btn show-more-btn"
+          onClick={() => setVisibleCount((c) => nextCount(c, sorted.length))}
+        >
+          Show more (showing {visibleCount} of {sorted.length})
+        </button>
       )}
     </div>
   );

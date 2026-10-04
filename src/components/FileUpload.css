@@ -186,3 +186,9 @@
     font-size: 0.95rem;
   }
 }
+
+.upload-card:focus-visible {
+  outline: 3px solid var(--secondary);
+  outline-offset: 4px;
+  border-color: var(--secondary);
+}
