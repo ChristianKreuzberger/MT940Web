@@ -150,3 +150,16 @@
     font-size: 0.9rem;
   }
 }
+
+.reversal-badge {
+  margin-left: 6px;
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  background: rgba(245, 158, 11, 0.2);
+  color: var(--warning);
+}
