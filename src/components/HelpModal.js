@@ -33,7 +33,7 @@ function HelpModal({ onClose }) {
           <section className="help-section">
             <h3><Upload size={16} /> Uploading a file</h3>
             <ul>
-              <li>Click the upload area or drag and drop your <code>.mt940</code> / <code>.sta</code> file onto it.</li>
+              <li>Click the upload area or drag and drop your <code>.mt940</code>, <code>.mta</code>, <code>.sta</code> or <code>.txt</code> file onto it.</li>
               <li>The file is parsed entirely in your browser — nothing is sent to any server.</li>
             </ul>
           </section>
@@ -41,9 +41,9 @@ function HelpModal({ onClose }) {
           <section className="help-section">
             <h3><Zap size={16} /> Reading the results</h3>
             <ul>
-              <li><strong>Statement Info</strong> — shows account number, bank BIC, opening &amp; closing balances.</li>
+              <li><strong>Statement Info</strong> — shows account number, bank code, currency, statement period, total transactions and reference.</li>
               <li><strong>Transactions</strong> — lists every transaction with date, amount, and description.</li>
-              <li>Use the search / filter bar to narrow down transactions.</li>
+              <li>Use the filter buttons (period, direction, amount, type) and the sort options to narrow down transactions; <strong>Reset filters</strong> clears them.</li>
             </ul>
           </section>
 

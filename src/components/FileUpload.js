@@ -54,7 +54,7 @@ function FileUpload({ onFileUpload, error, loading }) {
         <input
           ref={fileInputRef}
           type="file"
-          accept=".mt940,.mta,.txt"
+          accept=".mt940,.mta,.sta,.txt"
           onChange={handleFileSelect}
           disabled={loading}
         />
