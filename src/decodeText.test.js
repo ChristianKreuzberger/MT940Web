@@ -1,10 +1,17 @@
-import { TextDecoder } from 'util';
+import { TextDecoder as NodeTextDecoder } from 'util';
 import { decodeMt940Bytes } from './decodeText';
 
 describe('decodeMt940Bytes', () => {
     beforeAll(() => {
-        // jsdom in CRA's Jest does not provide TextDecoder
-        global.TextDecoder = TextDecoder;
+        // jsdom in CRA's Jest does not provide TextDecoder, so use Node's.
+        // Some Node 20.x releases decode windows-1252 like latin1 (0x80
+        // becomes U+0080 instead of the euro sign) unless decoding in stream
+        // mode, so decode in stream mode and flush to behave like browsers.
+        global.TextDecoder = class extends NodeTextDecoder {
+            decode(input) {
+                return super.decode(input, { stream: true }) + super.decode();
+            }
+        };
     });
 
     test('decodes Windows-1252 bytes (Mueller with u-umlaut)', () => {
