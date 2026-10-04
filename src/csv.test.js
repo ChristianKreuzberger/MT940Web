@@ -114,7 +114,7 @@ describe('transactionsToCsv', () => {
         const line = rows(transactionsToCsv(data.transactions, data.currency))[1];
         const f = line.split(';');
         expect(f.slice(0, 5)).toEqual(['2026-01-02', '-250.5', 'EUR', 'Debit', f[4]]);
-        expect(f[5]).toBe('Max Mustermann');
+        expect(f[5]).toBe('MaxMustermann');
         expect(f[6]).toBe('DE89370400440532013000');
         expect(f[7]).toBe('COBADEFFXXX');
         expect(f[8]).toBe('E2E-42');
