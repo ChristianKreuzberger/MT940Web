@@ -52,6 +52,31 @@ describe.each(Object.keys(modals))('%s focus handling', (name) => {
     });
 });
 
+describe.each(Object.keys(modals))('%s Escape key', (name) => {
+    const render = (onClose) => {
+        const el = {
+            HelpModal: <HelpModal onClose={onClose} />,
+            SummaryModal: <SummaryModal transactions={[]} currency="EUR" onClose={onClose} />,
+            ParseReportModal: (
+                <ParseReportModal result={{ transactions: [], statements: [] }} error={null} fileName="a.mt940" onClose={onClose} />
+            ),
+        }[name];
+        act(() => root.render(el));
+    };
+    const press = (key) => act(() => {
+        document.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true }));
+    });
+
+    test('Escape calls onClose, other keys do not', () => {
+        const onClose = jest.fn();
+        render(onClose);
+        press('Enter');
+        expect(onClose).not.toHaveBeenCalled();
+        press('Escape');
+        expect(onClose).toHaveBeenCalledTimes(1);
+    });
+});
+
 test('Help from the menu hands focus to the Menu button before the modal mounts', () => {
     let activeWhenOpened;
     act(() => root.render(<AppHeader onHelpOpen={() => { activeWhenOpened = document.activeElement; }} />));
