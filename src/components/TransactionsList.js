@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import TransactionCard from './TransactionCard';
 import SummaryModal from './SummaryModal';
 import { getCutoffISO } from '../dateUtils';
+import { PAGE_SIZE, visibleItems, nextCount, hasMore } from '../paging';
 import './TransactionsList.css';
 
 const DIRECTION_FILTERS = [
@@ -39,6 +40,16 @@ function TransactionsList({ transactions, currency }) {
   const [sortField, setSortField] = useState('date');
   const [sortDir, setSortDir] = useState('asc');
   const [showSummary, setShowSummary] = useState(false);
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+
+  // Back to the first page whenever the filters, sort or data change. Done
+  // during render (not by remounting the grid) so expanded cards stay open.
+  const pagingSig = [direction, amountRange, txType, dateRange, sortField, sortDir].join('|');
+  const [pagedFor, setPagedFor] = useState({ pagingSig, transactions });
+  if (pagedFor.pagingSig !== pagingSig || pagedFor.transactions !== transactions) {
+    setPagedFor({ pagingSig, transactions });
+    setVisibleCount(PAGE_SIZE);
+  }
 
   // Derive unique transaction codes present in the data
   const txTypes = useMemo(() => {
@@ -234,15 +245,22 @@ function TransactionsList({ transactions, currency }) {
         </div>
       ) : (
         <div className="transactions-grid">
-          {sorted.map((transaction, index) => (
+          {visibleItems(sorted, visibleCount).map((transaction) => (
             <TransactionCard
-              key={index}
+              key={transaction.id}
               transaction={transaction}
               currency={currency}
-              index={index}
             />
           ))}
         </div>
+      )}
+      {hasMore(visibleCount, sorted.length) && (
+        <button
+          className="filter-btn show-more-btn"
+          onClick={() => setVisibleCount((c) => nextCount(c, sorted.length))}
+        >
+          Show more (showing {visibleCount} of {sorted.length})
+        </button>
       )}
     </div>
   );

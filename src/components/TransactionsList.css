@@ -136,3 +136,8 @@
     font-size: 1.3rem;
   }
 }
+
+.show-more-btn {
+  display: block;
+  margin: 1rem auto 0;
+}
