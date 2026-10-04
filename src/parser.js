@@ -5,6 +5,10 @@
  */
 import { Parser as LibParser } from '@tripss/mt940js';
 
+// The id is the position in the final (merged, chronological) list. It is
+// assigned here, not per statement, so ids stay unique across statements.
+const withIds = transactions => transactions.map((t, i) => ({ ...t, id: i }));
+
 export class MT940Parser {
     // ─── Public API ──────────────────────────────────────────────────────────
 
@@ -18,7 +22,8 @@ export class MT940Parser {
             }
 
             if (statements.length === 1) {
-                return this._adaptStatement(statements[0]);
+                const only = this._adaptStatement(statements[0]);
+                return { ...only, transactions: withIds(only.transactions) };
             }
 
             // Multiple statement blocks in one file (e.g. daily exports merged
@@ -43,7 +48,7 @@ export class MT940Parser {
                     startDate: first.statementPeriod.startDate,
                     endDate:   last.statementPeriod.endDate,
                 },
-                transactions: sorted.flatMap(s => s.transactions),
+                transactions: withIds(sorted.flatMap(s => s.transactions)),
                 statementCount: sorted.length,
                 warnings: this._checkMergedBalances(first, last, sorted),
             };

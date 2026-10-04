@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { MT940Parser } from '../parser';
 import './TransactionCard.css';
 
-function TransactionCard({ transaction, currency, index }) {
+function TransactionCard({ transaction, currency }) {
   const [expanded, setExpanded] = useState(false);
   const isDebit = transaction.isDebit;
   const amount = Math.abs(transaction.amount);
@@ -10,7 +10,6 @@ function TransactionCard({ transaction, currency, index }) {
   return (
     <div
       className={`transaction-card${expanded ? ' expanded' : ''}`}
-      style={{ animationDelay: `${index * 0.05}s` }}
       onClick={() => setExpanded(e => !e)}
     >
       <div className="transaction-header">
