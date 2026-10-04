@@ -151,9 +151,9 @@ describe('MT940Parser.parse', () => {
             const gap = stmt({ ref: 'S2', num: 2, openDate: '260201', open: '800,00', txs: [creditTx], closeDate: '260228', close: '900,00' });
             const result = parser.parse(mt940(...jan, ...gap));
             expect(result.warnings).toHaveLength(1);
-            expect(result.warnings[0]).toContain('1,000.00');
-            expect(result.warnings[0]).toContain('900.00');
-            expect(result.warnings[0]).toContain('50.50');
+            expect(result.warnings[0]).toContain(MT940Parser.formatAmount(1000));
+            expect(result.warnings[0]).toContain(MT940Parser.formatAmount(900));
+            expect(result.warnings[0]).toContain(MT940Parser.formatAmount(50.5));
         });
 
         test('does not warn because of floating point rounding', () => {
