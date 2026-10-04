@@ -1,4 +1,4 @@
-import { buildDailyBalanceData } from './BalanceChart';
+import { buildDailyBalanceData, balanceDifference } from './balanceData';
 
 const tx = (bookingDate, amount, isDebit = false) => ({ bookingDate, amount, isDebit });
 
@@ -32,5 +32,46 @@ describe('buildDailyBalanceData', () => {
       { date: '2026-03-30', balance: 590 },
       { date: '2026-03-31', balance: 570 },
     ]);
+  });
+
+  test('handles debit-only days', () => {
+    const points = buildDailyBalanceData(
+      [tx('2026-03-30', 100, true), tx('2026-03-30', 50, true)],
+      500
+    );
+    expect(points).toEqual([
+      { date: '2026-03-29', balance: 500 },
+      { date: '2026-03-30', balance: 350 },
+    ]);
+  });
+
+  test('rounds float noise to cents', () => {
+    const points = buildDailyBalanceData([tx('2026-03-30', 0.1), tx('2026-03-30', 0.2)], 0);
+    expect(points[1].balance).toBe(0.3);
+  });
+});
+
+describe('balanceDifference', () => {
+  test('is null when balances match', () => {
+    expect(balanceDifference(570, 570)).toBeNull();
+  });
+
+  test('is null for sub-cent noise', () => {
+    expect(balanceDifference(0.1 + 0.2, 0.3)).toBeNull();
+  });
+
+  test('is null without a closing balance', () => {
+    expect(balanceDifference(570, null)).toBeNull();
+    expect(balanceDifference(570, undefined)).toBeNull();
+  });
+
+  test('returns closing minus computed', () => {
+    expect(balanceDifference(570, 582.5)).toBe(12.5);
+    expect(balanceDifference(570, 500)).toBe(-70);
+  });
+
+  test('works with negative balances', () => {
+    expect(balanceDifference(-100, -90.25)).toBe(9.75);
+    expect(balanceDifference(-100, -100)).toBeNull();
   });
 });
