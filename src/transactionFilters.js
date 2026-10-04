@@ -1,4 +1,5 @@
 import { getCutoffISO } from './dateUtils';
+import { matchesAmountRange } from './amountBuckets';
 
 export function filterTransactions(transactions, { direction, amountRange, txType, dateRange, customFrom, customTo }) {
     // Use the most recent booking date in the file as the reference point
@@ -14,9 +15,7 @@ export function filterTransactions(transactions, { direction, amountRange, txTyp
 
         // Amount range
         const abs = Math.abs(t.amount);
-        if (amountRange === 'small' && abs >= 100) return false;
-        if (amountRange === 'medium' && (abs < 100 || abs > 1000)) return false;
-        if (amountRange === 'large' && abs <= 1000) return false;
+        if (!matchesAmountRange(amountRange, abs)) return false;
 
         // Transaction type
         if (txType !== 'all' && t.transactionCode !== txType) return false;

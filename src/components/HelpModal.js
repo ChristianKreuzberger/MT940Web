@@ -1,17 +1,12 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { X, FileText, Upload, Download, Shield, Zap } from 'lucide-react';
 import { useModalFocus } from '../useModalFocus';
+import { useEscapeKey } from '../useEscapeKey';
 import './HelpModal.css';
 
 function HelpModal({ onClose }) {
   const dialogRef = useModalFocus();
-  useEffect(() => {
-    function onKey(e) {
-      if (e.key === 'Escape') onClose();
-    }
-    document.addEventListener('keydown', onKey);
-    return () => document.removeEventListener('keydown', onKey);
-  }, [onClose]);
+  useEscapeKey(onClose);
 
   return (
     <div className="help-overlay" ref={dialogRef} tabIndex={-1} onClick={onClose} role="dialog" aria-modal="true" aria-label="Help">
