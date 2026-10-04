@@ -59,3 +59,79 @@ test('renders 100 cards at a time, and resets when the sort changes', () => {
     click(button('Amount'));
     expect(cards()).toHaveLength(100);
 });
+
+describe('custom period filter', () => {
+    const dateInputs = () => container.querySelectorAll('input[type=date]');
+    const setDate = (input, value) => act(() => {
+        Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set.call(input, value);
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+    });
+    const setRange = (from, to) => {
+        const [f, t] = dateInputs();
+        if (from !== undefined) setDate(f, from);
+        if (to !== undefined) setDate(t, to);
+    };
+
+    test('date inputs appear only when Custom is selected', () => {
+        render(make(28));
+        expect(dateInputs()).toHaveLength(0);
+        click(button('Custom'));
+        expect(dateInputs()).toHaveLength(2);
+        click(button('All time'));
+        expect(dateInputs()).toHaveLength(0);
+    });
+
+    test('from and to are inclusive', () => {
+        render(make(28));
+        click(button('Custom'));
+        setRange('2026-01-05', '2026-01-07');
+        expect(cards()).toHaveLength(3);
+    });
+
+    test('either bound alone is open-ended', () => {
+        render(make(28));
+        click(button('Custom'));
+        setRange('2026-01-26');
+        expect(cards()).toHaveLength(3); // 26, 27, 28
+        setRange('', '2026-01-02');
+        expect(cards()).toHaveLength(2); // 1, 2
+    });
+
+    test('combines with other filters', () => {
+        render(make(28));
+        click(button('Custom'));
+        setRange('2026-01-05', '2026-01-07');
+        expect(cards()).toHaveLength(3);
+        click(button('Incoming')); // make() is all debit
+        expect(cards()).toHaveLength(0);
+    });
+
+    test('from after to shows the empty message', () => {
+        render(make(28));
+        click(button('Custom'));
+        setRange('2026-01-10', '2026-01-05');
+        expect(cards()).toHaveLength(0);
+        expect(container.textContent).toContain('No transactions match');
+    });
+
+    test('Reset filters clears the custom range', () => {
+        render(make(28));
+        click(button('Custom'));
+        setRange('2026-01-05', '2026-01-07');
+        click(button('Reset filters'));
+        expect(dateInputs()).toHaveLength(0);
+        expect(cards()).toHaveLength(28);
+        click(button('Custom'));
+        expect([...dateInputs()].map((i) => i.value)).toEqual(['', '']);
+        expect(cards()).toHaveLength(28);
+    });
+
+    test('changing the range goes back to the first page', () => {
+        render(make(250));
+        click(button('Custom'));
+        click(button('Show more'));
+        expect(cards()).toHaveLength(200);
+        setRange(undefined, '2026-01-20');
+        expect(cards()).toHaveLength(100);
+    });
+});

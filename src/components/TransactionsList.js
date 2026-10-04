@@ -25,6 +25,7 @@ const DATE_FILTERS = [
   { key: '90', label: 'Last 90 days' },
   { key: '180', label: 'Last 180 days' },
   { key: '270', label: 'Last 270 days' },
+  { key: 'custom', label: 'Custom' },
 ];
 
 const SORT_FIELDS = [
@@ -37,6 +38,8 @@ function TransactionsList({ transactions, currency }) {
   const [amountRange, setAmountRange] = useState('all');
   const [txType, setTxType] = useState('all');
   const [dateRange, setDateRange] = useState('all');
+  const [customFrom, setCustomFrom] = useState('');
+  const [customTo, setCustomTo] = useState('');
   const [sortField, setSortField] = useState('date');
   const [sortDir, setSortDir] = useState('asc');
   const [showSummary, setShowSummary] = useState(false);
@@ -44,7 +47,7 @@ function TransactionsList({ transactions, currency }) {
 
   // Back to the first page whenever the filters, sort or data change. Done
   // during render (not by remounting the grid) so expanded cards stay open.
-  const pagingSig = [direction, amountRange, txType, dateRange, sortField, sortDir].join('|');
+  const pagingSig = [direction, amountRange, txType, dateRange, customFrom, customTo, sortField, sortDir].join('|');
   const [pagedFor, setPagedFor] = useState({ pagingSig, transactions });
   if (pagedFor.pagingSig !== pagingSig || pagedFor.transactions !== transactions) {
     setPagedFor({ pagingSig, transactions });
@@ -59,7 +62,7 @@ function TransactionsList({ transactions, currency }) {
   }, [transactions]);
 
   const dateThreshold = useMemo(() => {
-    if (dateRange === 'all') return null;
+    if (dateRange === 'all' || dateRange === 'custom') return null;
     // Use the most recent booking date in the file as the reference point
     // so the filter still works on historical files.
     return getCutoffISO((transactions || []).map((t) => t.bookingDate), dateRange);
@@ -96,6 +99,11 @@ function TransactionsList({ transactions, currency }) {
     if (dateThreshold && t.bookingDate) {
       if (t.bookingDate < dateThreshold) return false;
     }
+    // Custom range: inclusive, plain YYYY-MM-DD string comparison ('' = unbounded)
+    if (dateRange === 'custom' && t.bookingDate) {
+      if (customFrom && t.bookingDate < customFrom) return false;
+      if (customTo && t.bookingDate > customTo) return false;
+    }
 
     return true;
   });
@@ -119,6 +127,8 @@ function TransactionsList({ transactions, currency }) {
     setAmountRange('all');
     setTxType('all');
     setDateRange('all');
+    setCustomFrom('');
+    setCustomTo('');
   }
 
   return (
@@ -160,6 +170,20 @@ function TransactionsList({ transactions, currency }) {
                 </button>
               ))}
             </div>
+            {dateRange === 'custom' && (
+              <div className="custom-range">
+                <label>
+                  From
+                  <input type="date" value={customFrom} max={customTo || undefined}
+                    onChange={(e) => setCustomFrom(e.target.value)} />
+                </label>
+                <label>
+                  To
+                  <input type="date" value={customTo} min={customFrom || undefined}
+                    onChange={(e) => setCustomTo(e.target.value)} />
+                </label>
+              </div>
+            )}
           </div>
 
           <div className="filter-group">

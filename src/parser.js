@@ -171,18 +171,19 @@ export class MT940Parser {
         return result;
     }
 
-    static formatAmount(amount) {
-        return new Intl.NumberFormat('en-US', {
+    // locale undefined = the browser's locale
+    static formatAmount(amount, locale = undefined) {
+        return new Intl.NumberFormat(locale, {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2,
         }).format(amount);
     }
 
-    static formatDate(dateStr) {
+    static formatDate(dateStr, locale = undefined) {
         if (!dateStr) return 'N/A';
         try {
             const date = new Date(dateStr + 'T00:00:00Z');
-            return date.toLocaleDateString('en-US', {
+            return date.toLocaleDateString(locale, {
                 timeZone: 'UTC',
                 year: 'numeric',
                 month: 'long',
