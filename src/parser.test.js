@@ -232,10 +232,37 @@ describe('MT940Parser.parse', () => {
         });
     });
 
+    describe('formatAmount', () => {
+        test('formats with the given locale', () => {
+            expect(MT940Parser.formatAmount(1234.56, 'de-DE')).toBe('1.234,56');
+            expect(MT940Parser.formatAmount(1234.56, 'en-US')).toBe('1,234.56');
+            expect(MT940Parser.formatAmount(5, 'de-DE')).toBe('5,00');
+        });
+
+        test('defaults to the runtime locale', () => {
+            const expected = new Intl.NumberFormat(undefined, {
+                minimumFractionDigits: 2, maximumFractionDigits: 2,
+            }).format(1234.56);
+            expect(MT940Parser.formatAmount(1234.56)).toBe(expected);
+        });
+    });
+
     describe('formatDate', () => {
         test('shows the stored calendar day regardless of local timezone', () => {
-            expect(MT940Parser.formatDate('2026-01-02')).toBe('January 2, 2026');
-            expect(MT940Parser.formatDate('2026-10-25')).toBe('October 25, 2026');
+            expect(MT940Parser.formatDate('2026-01-02', 'en-US')).toBe('January 2, 2026');
+            expect(MT940Parser.formatDate('2026-10-25', 'en-US')).toBe('October 25, 2026');
+        });
+
+        test('formats with the given locale', () => {
+            expect(MT940Parser.formatDate('2026-01-02', 'de-DE')).toBe('2. Januar 2026');
+            expect(MT940Parser.formatDate('2026-10-25', 'de-DE')).toBe('25. Oktober 2026');
+        });
+
+        test('defaults to the runtime locale', () => {
+            const expected = new Date(Date.UTC(2026, 0, 2)).toLocaleDateString(undefined, {
+                timeZone: 'UTC', year: 'numeric', month: 'long', day: 'numeric',
+            });
+            expect(MT940Parser.formatDate('2026-01-02')).toBe(expected);
         });
     });
 });
