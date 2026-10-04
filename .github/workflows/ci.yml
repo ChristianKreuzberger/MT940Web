@@ -22,5 +22,11 @@ jobs:
           node-version: 20
           cache: npm
       - run: npm ci
-      - run: npm test -- --watchAll=false
+      - name: Test (timezone matrix)
+        run: |
+          for tz in UTC Europe/Berlin America/Los_Angeles; do
+            echo "::group::TZ=$tz"
+            TZ=$tz npm test -- --watchAll=false
+            echo "::endgroup::"
+          done
       - run: npm run build
