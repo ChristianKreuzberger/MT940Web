@@ -10,11 +10,12 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import { MT940Parser } from '../parser';
+import { addDaysISO, toISODate } from '../dateUtils';
 import './BalanceChart.css';
 
 function toDateKey(date) {
   return date instanceof Date
-    ? date.toISOString().slice(0, 10)
+    ? toISODate(date)
     : String(date).slice(0, 10);
 }
 
@@ -32,7 +33,7 @@ function formatYAxis(value) {
   return value.toFixed(0);
 }
 
-function buildDailyBalanceData(transactions, openingBalance) {
+export function buildDailyBalanceData(transactions, openingBalance) {
   // Group net amount per day
   const byDay = {};
   transactions.forEach((tx) => {
@@ -46,9 +47,7 @@ function buildDailyBalanceData(transactions, openingBalance) {
 
   // Prepend the opening balance as the day before the first transaction
   const firstDay = days[0];
-  const [y, m, d] = firstDay.split('-').map(Number);
-  const prevDate = new Date(y, m - 1, d - 1);
-  const openKey = prevDate.toISOString().slice(0, 10);
+  const openKey = addDaysISO(firstDay, -1);
 
   const points = [{ date: openKey, balance: Math.round((openingBalance || 0) * 100) / 100 }];
 

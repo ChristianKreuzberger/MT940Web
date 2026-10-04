@@ -178,6 +178,7 @@ export class MT940Parser {
         try {
             const date = new Date(dateStr + 'T00:00:00Z');
             return date.toLocaleDateString('en-US', {
+                timeZone: 'UTC',
                 year: 'numeric',
                 month: 'long',
                 day: 'numeric',
