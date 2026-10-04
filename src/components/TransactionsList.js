@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import TransactionCard from './TransactionCard';
 import SummaryModal from './SummaryModal';
+import { getCutoffISO } from '../dateUtils';
 import './TransactionsList.css';
 
 const DIRECTION_FILTERS = [
@@ -50,15 +51,7 @@ function TransactionsList({ transactions, currency }) {
     if (dateRange === 'all') return null;
     // Use the most recent booking date in the file as the reference point
     // so the filter still works on historical files.
-    const dates = (transactions || [])
-      .map((t) => t.bookingDate)
-      .filter(Boolean)
-      .map((d) => new Date(d).getTime())
-      .filter((n) => !isNaN(n));
-    const latest = dates.length ? Math.max(...dates) : Date.now();
-    const cutoff = new Date(latest);
-    cutoff.setDate(cutoff.getDate() - Number(dateRange));
-    return cutoff;
+    return getCutoffISO((transactions || []).map((t) => t.bookingDate), dateRange);
   }, [dateRange, transactions]);
 
   if (!transactions || transactions.length === 0) {
@@ -90,7 +83,7 @@ function TransactionsList({ transactions, currency }) {
 
     // Date range
     if (dateThreshold && t.bookingDate) {
-      if (new Date(t.bookingDate) < dateThreshold) return false;
+      if (t.bookingDate < dateThreshold) return false;
     }
 
     return true;
@@ -99,8 +92,8 @@ function TransactionsList({ transactions, currency }) {
   const sorted = [...filtered].sort((a, b) => {
     let aVal, bVal;
     if (sortField === 'date') {
-      aVal = a.bookingDate ? new Date(a.bookingDate).getTime() : 0;
-      bVal = b.bookingDate ? new Date(b.bookingDate).getTime() : 0;
+      aVal = a.bookingDate ? Date.parse(a.bookingDate) : 0;
+      bVal = b.bookingDate ? Date.parse(b.bookingDate) : 0;
     } else {
       aVal = Math.abs(a.amount ?? 0);
       bVal = Math.abs(b.amount ?? 0);
