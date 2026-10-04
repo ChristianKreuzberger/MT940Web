@@ -3,17 +3,6 @@ import { MT940Parser } from '../parser';
 import './StatementInfo.css';
 
 function StatementInfo({ data }) {
-  const formatBalance = (amount) => {
-    const formatted = MT940Parser.formatAmount(amount || 0);
-    return amount < 0 ? `-${formatted}` : formatted;
-  };
-
-  const balanceClass = (amount) => {
-    if (amount > 0) return 'balance-positive';
-    if (amount < 0) return 'balance-negative';
-    return '';
-  };
-
   return (
     <div className="statement-info">
       <div className="info-grid">

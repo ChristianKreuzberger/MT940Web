@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { HelpCircle, Info, X, ChevronDown } from 'lucide-react';
+import { HelpCircle, Info, ChevronDown } from 'lucide-react';
 import './AppHeader.css';
 
 const APP_VERSION = process.env.REACT_APP_VERSION || require('../../package.json').version;
